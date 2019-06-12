@@ -1,0 +1,78 @@
+RUTAS:
+
+PUT      | ops/contract/{id}             | contract.update       | Modules\Ops\Http\Controllers\OpsController@update                      | web,auth,permission:update-contract                  |
+|        | DELETE   | ops/contract/{id}             | contract.destroy      | Modules\Ops\Http\Controllers\OpsController@destroy                     | web,auth,permission:delete-contract                  |
+
+
+ACCIONES
+
+@permission('update-contract')
+    <a
+        href="{{ route('contract.edit', ['id' => $Id]) }}"
+        title="{{ __('Actualizar contrato') }}"
+        data-IdUsuario="{{ $IdUsuario }}"
+        class="btn btn-primary"
+    >
+        <i class="fa fa-pencil-alt"></i>
+    </a>
+@endpermission
+
+@permission('delete-contract')
+<a
+    href="#"    
+    data-route="{{route('contract.destroy', ['id' => $Id])}}"
+    title="{{ __('Eliminar Contrato') }}"
+    data-Id="{{ $Id }}"
+    class="btn btn-danger btn-remove"
+>
+    <i class="fa fa-trash"></i>
+</a>
+
+@endpermiss
+
+PROCEDIMIENTOS
+
+public function update(ContractRequest $request, $id)
+    {
+        try {
+            \DB::beginTransaction();
+            $Contrato = Contract::findOrFail($id);
+      
+            $Contrato->fill($request->input())->save();
+            \DB::commit();
+            return redirect(route('contract.index'))->with('message', [
+                'success', __("Contrato actualizado correctamente")
+            ]);
+        } catch (\Exception $exception) {
+            \DB::rollBack();
+            return redirect(route('contract.index'))->with('message', [
+                'danger', __(sprintf("Error actualizando el contrato: %s", $exception->getMessage()))
+            ]);
+        }
+    }
+
+    /**
+     * Remove the specified resource from storage.
+     * @param int $id
+     * @return Response
+     */
+    public function destroy( $id)
+    {
+       
+        if (request()->ajax()) {
+            if (auth()->user()->can('delete-contract')) {
+                try {
+                    \DB::beginTransaction();
+                    $contrato = Contract::find($id);
+                    $contrato->delete();
+                    \DB::commit();
+                } catch (\Exception $exception) {
+                    \DB::rollBack();
+                    //TODO hacer lo que sea necesario
+                }
+            }
+        } else {
+            abort(401);
+        }
+          
+    }
