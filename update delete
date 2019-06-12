@@ -76,3 +76,32 @@ public function update(ContractRequest $request, $id)
         }
           
     }
+ 
+ 
+ AJAX EN PLANTILLA ADMIN
+ @push('js')
+    <script>
+        var dt;
+        jQuery(document).ready(function ($) {
+
+            $(".select2").select2();
+
+            jQuery(document).on('click', '.btn-remove', function () {
+             //   alert($(this).data('route'))
+               jQuery.ajax({
+                   url: $(this).data('route'),
+                   type: 'DELETE',
+                   headers: {
+                       'x-csrf-token': $("meta[name=csrf-token]").attr('content')
+                   },
+                   success: (res) => {
+                       if (res.hasOwnProperty('msg')) {
+                           alert(res.msg);
+                       }
+                       dt.ajax.reload();
+                   }
+               })
+            })
+        });
+    </script>
+@endpush
